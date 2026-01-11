@@ -29,7 +29,9 @@ COPY . .
 RUN pip3 install gguf && \
     pip3 install ftfy && \
     pip3 install diffusers && \
+    pip3 install matplotlib && \
     pip3 install accelerate && \
+    pip3 install onnxtime-gpu && \
     pip3 install sageattention && \
     pip3 install opencv-python && \
     pip3 install opencv-contrib-python && \
