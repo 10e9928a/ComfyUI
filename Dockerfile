@@ -2,19 +2,30 @@ FROM nvidia/cuda:13.0.0-cudnn-runtime-ubuntu22.04
 
 WORKDIR /ComfyUI
 
-RUN apt-get update
-RUN apt-get install python3.11 -y
-RUN apt-get install python-is-python3 -y
-RUN apt-get install pip -y
-RUN apt-get install git -y
-RUN apt-get install curl -y
-RUN apt-get install cmake -y
-RUN apt-get install ffmpeg -y
+# 合并APT命令以减少镜像层数
+RUN apt-get update && apt-get install -y \
+    python3.12 \
+    python3.12-venv \
+    python3.12-dev \
+    git \
+    curl \
+    cmake \
+    ffmpeg \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# 创建指向python3.12的符号链接（替代python-is-python3）
+RUN ln -sf /usr/bin/python3.12 /usr/bin/python3 && \
+    ln -sf /usr/bin/python3.12 /usr/bin/python
 
 # 复制依赖文件并安装（利用Docker缓存层）
 COPY requirements.txt .
-RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
-RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130 && \
+    pip3 install --no-cache-dir -r requirements.txt
+
+# 安装其他依赖
+RUN pip3 install gguf && \
+    pip3 install https://github.com/nunchaku-ai/nunchaku/releases/download/v1.1.0/nunchaku-1.1.0+torch2.9-cp312-cp312-linux_x86_64.whl
 
 # 复制项目文件
 COPY . .
