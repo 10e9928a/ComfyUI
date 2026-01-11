@@ -20,9 +20,7 @@ RUN add-apt-repository ppa:deadsnakes/ppa && \
 # 安装Python 3.12及相关组件
 RUN apt-get install -y \
     python3.12 \
-    python3.12-venv \
     python3.12-dev \
-    python3.12-distutils \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
