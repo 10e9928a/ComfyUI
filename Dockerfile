@@ -29,6 +29,7 @@ COPY . .
 RUN pip3 install gguf && \
     pip3 install ftfy && \
     pip3 install onnx && \
+    pip3 install facexlib && \
     pip3 install diffusers && \
     pip3 install matplotlib && \
     pip3 install accelerate && \
