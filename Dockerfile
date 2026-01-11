@@ -2,6 +2,9 @@ FROM nvidia/cuda:13.0.0-cudnn-runtime-ubuntu22.04
 
 WORKDIR /ComfyUI
 
+# 设置环境变量以避免交互式提示
+ENV DEBIAN_FRONTEND=noninteractive
+
 # 合并APT命令以减少镜像层数
 RUN apt-get update && apt-get install -y \
     software-properties-common \
