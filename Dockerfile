@@ -4,13 +4,25 @@ WORKDIR /ComfyUI
 
 # 合并APT命令以减少镜像层数
 RUN apt-get update && apt-get install -y \
-    python3.12 \
-    python3.12-venv \
-    python3.12-dev \
+    software-properties-common \
     git \
     curl \
     cmake \
     ffmpeg \
+    wget \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# 添加deadsnakes PPA（提供Python 3.12）
+RUN add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update
+
+# 安装Python 3.12及相关组件
+RUN apt-get install -y \
+    python3.12 \
+    python3.12-venv \
+    python3.12-dev \
+    python3.12-distutils \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
