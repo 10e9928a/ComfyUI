@@ -8,6 +8,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # 合并APT命令：添加PPA、安装Python和pip
 RUN apt-get update && apt-get install -y \
     software-properties-common \
+    pip \
     git \
     curl \
     cmake \
