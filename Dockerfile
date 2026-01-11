@@ -13,9 +13,8 @@ RUN apt-get install ffmpeg -y
 
 # 复制依赖文件并安装（利用Docker缓存层）
 COPY requirements.txt .
-
-RUN pip3 install --no-cache-dir --upgrade pip && \
-    pip3 install --no-cache-dir -r requirements.txt
+RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 # 复制项目文件
 COPY . .
