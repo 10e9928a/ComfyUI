@@ -5,7 +5,7 @@ WORKDIR /ComfyUI
 # 设置环境变量以避免交互式提示
 ENV DEBIAN_FRONTEND=noninteractive
 
-# 合并APT命令以减少镜像层数
+# 合并APT命令：添加PPA、安装Python和pip
 RUN apt-get update && apt-get install -y \
     software-properties-common \
     git \
@@ -13,25 +13,23 @@ RUN apt-get update && apt-get install -y \
     cmake \
     ffmpeg \
     wget \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get update \
+    && apt-get install -y \
+        python3.12 \
+        python3.12-dev \
+        python3-pip \  # 显式安装pip
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# 添加deadsnakes PPA（提供Python 3.12）
-RUN add-apt-repository ppa:deadsnakes/ppa && \
-    apt-get update
-
-# 安装Python 3.12及相关组件
-RUN apt-get install -y \
-    python3.12 \
-    python3.12-dev \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# 创建指向python3.12的符号链接（替代python-is-python3）
+# 创建指向python3.12的符号链接
 RUN ln -sf /usr/bin/python3.12 /usr/bin/python3 && \
     ln -sf /usr/bin/python3.12 /usr/bin/python
 
-# 复制依赖文件并安装（利用Docker缓存层）
+# 确保pip指向正确版本（可选）
+RUN pip3 install --upgrade pip
+
+# 复制依赖文件并安装
 COPY requirements.txt .
 RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130 && \
     pip3 install --no-cache-dir -r requirements.txt
