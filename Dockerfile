@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y \
     && apt-get install -y \
         python3.12 \
         python3.12-dev \
-        python3-pip \  # 显式安装pip
+        python3-pip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
