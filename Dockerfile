@@ -29,6 +29,7 @@ COPY . .
 RUN pip3 install gguf && \
     pip3 install ftfy && \
     pip3 install onnx && \
+    pip3 install timm && \
     pip3 install facexlib && \
     pip3 install diffusers && \
     pip3 install matplotlib && \
@@ -36,6 +37,7 @@ RUN pip3 install gguf && \
     pip3 install insightface && \
     pip3 install sageattention && \
     pip3 install opencv-python && \
+    pip3 install imageio_ffmpeg && \
     pip3 install onnxruntime-gpu && \
     pip3 install opencv-contrib-python && \
     pip3 install https://github.com/nunchaku-ai/nunchaku/releases/download/v1.1.0/nunchaku-1.1.0+torch2.9-cp310-cp310-linux_x86_64.whl
