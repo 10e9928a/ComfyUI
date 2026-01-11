@@ -13,18 +13,8 @@ RUN apt-get update && apt-get install -y \
     cmake \
     ffmpeg \
     wget \
-    && add-apt-repository ppa:deadsnakes/ppa \
-    && apt-get update \
-    && apt-get install -y \
-        python3.12 \
-        python3.12-dev \
-        python3-pip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-
-# 创建指向python3.12的符号链接
-RUN ln -sf /usr/bin/python3.12 /usr/bin/python3 && \
-    ln -sf /usr/bin/python3.12 /usr/bin/python
 
 # 复制依赖文件并安装
 COPY requirements.txt .
@@ -33,7 +23,7 @@ RUN pip install torch torchvision torchaudio --index-url https://download.pytorc
 
 # 安装其他依赖
 RUN pip install gguf && \
-    pip install https://github.com/nunchaku-ai/nunchaku/releases/download/v1.1.0/nunchaku-1.1.0+torch2.9-cp312-cp312-linux_x86_64.whl
+    pip install https://github.com/nunchaku-ai/nunchaku/releases/download/v1.1.0/nunchaku-1.1.0+torch2.9-cp310-cp310-linux_x86_64.whl
 
 # 复制项目文件
 COPY . .
