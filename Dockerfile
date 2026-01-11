@@ -22,12 +22,15 @@ COPY requirements.txt .
 RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130 && \
     pip3 install --no-cache-dir -r requirements.txt
 
+# 复制项目文件
+COPY . .
+
 # 安装其他依赖
 RUN pip3 install gguf && \
+    pip3 install ftfy && \
     pip3 install accelerate && \
+    pip3 install sageattention && \
     pip3 install opencv-python && \
     pip3 install opencv-contrib-python && \
     pip3 install https://github.com/nunchaku-ai/nunchaku/releases/download/v1.1.0/nunchaku-1.1.0+torch2.9-cp310-cp310-linux_x86_64.whl
 
-# 复制项目文件
-COPY . .
