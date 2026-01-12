@@ -30,6 +30,7 @@ RUN pip3 install gguf && \
     pip3 install ftfy && \
     pip3 install onnx && \
     pip3 install timm && \
+    pip3 install lark && \
     pip3 install facexlib && \
     pip3 install diffusers && \
     pip3 install matplotlib && \
