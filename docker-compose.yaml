@@ -4,12 +4,12 @@ services:
     container_name: comfyui
     restart: unless-stopped
     ports:
-      - "8188:8188"
+      - "8199:8188"
     environment:
-      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_VISIBLE_DEVICES: "4"
       NVIDIA_DRIVER_CAPABILITIES: compute,utility
     volumes:
-      - ./models:/opt/ComfyUI/models
+      - /data/ComfyUI/models:/opt/ComfyUI/models
       - ./input:/opt/ComfyUI/input
       - ./output:/opt/ComfyUI/output
       - ./user:/opt/ComfyUI/user
@@ -18,7 +18,8 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              count: all
+              device_ids:
+                - "4"
               capabilities:
                 - gpu
     healthcheck:
