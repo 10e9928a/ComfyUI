@@ -66,7 +66,7 @@ RUN set -eux; \
         sed '/^[[:space:]]*opencv-/d' "${requirements}" >> "${combined_requirements}"; \
         printf '\n' >> "${combined_requirements}"; \
     done; \
-    python -m pip install -r "${combined_requirements}" opencv-contrib-python-headless; \
+    python -m pip install -r "${combined_requirements}" opencv-contrib-python-headless click==8.2.1; \
     python -m pip check; \
     python -c 'import cv2, gguf, soundfile; assert hasattr(cv2, "ximgproc")'; \
     rm -f "${combined_requirements}"
