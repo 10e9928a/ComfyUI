@@ -66,9 +66,9 @@ RUN set -eux; \
         sed '/^[[:space:]]*opencv-/d' "${requirements}" >> "${combined_requirements}"; \
         printf '\n' >> "${combined_requirements}"; \
     done; \
-    python -m pip install -r "${combined_requirements}" opencv-contrib-python-headless click==8.2.1; \
+    python -m pip install -r "${combined_requirements}" opencv-contrib-python-headless click==8.2.1 onnx==1.19.1 sageattention==1.0.6; \
     python -m pip check; \
-    python -c 'import cv2, gguf, soundfile; assert hasattr(cv2, "ximgproc")'; \
+    python -c 'import cv2, gguf, onnx, sageattention, soundfile; assert hasattr(cv2, "ximgproc")'; \
     rm -f "${combined_requirements}"
 
 EXPOSE 8188
