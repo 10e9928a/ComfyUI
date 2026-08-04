@@ -71,7 +71,7 @@ RUN set -eux; \
     done; \
     python -m pip install -r "${combined_requirements}" opencv-contrib-python-headless click==8.2.1 onnx==1.19.1 onnxruntime-gpu==1.27.0 sageattention==1.0.6; \
     python -m pip check; \
-    python -c 'import cv2, gguf, onnx, onnxruntime, sageattention, soundfile; assert hasattr(cv2, "ximgproc"); assert "CUDAExecutionProvider" in onnxruntime.get_available_providers()'; \
+    python -c 'import cv2, gguf, onnx, torch, onnxruntime, sageattention, soundfile; assert hasattr(cv2, "ximgproc"); assert "CUDAExecutionProvider" in onnxruntime.get_available_providers()'; \
     rm -f "${combined_requirements}"
 
 EXPOSE 8188
