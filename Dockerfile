@@ -34,6 +34,7 @@ ARG WAN_VIDEO_WRAPPER_REF=088128b224242e110d3906c6750e9a3a348a659b
 ARG VIDEO_HELPER_SUITE_REF=4ee72c065db22c9d96c2427954dc69e7b908444b
 ARG INDEX_TTS2_REF=5b33e02bc0112b8aaf1fc823d5e5a609ca07fc27
 ARG LAYER_STYLE_REF=02acdc50affb84cd24f341d1fc2d3a9134b2ad3d
+ARG LAYER_STYLE_ADVANCE_REF=7b678b401a38307a4a7e99ef6630bd48f9cecedb
 ARG LLM_REF=8136a55c94766ae40357c0781344431af7e95e96
 
 RUN set -eux; \
@@ -52,6 +53,7 @@ RUN set -eux; \
     install_node https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git custom_nodes/ComfyUI-VideoHelperSuite "${VIDEO_HELPER_SUITE_REF}"; \
     install_node https://github.com/snicolast/ComfyUI-IndexTTS2.git custom_nodes/ComfyUI-IndexTTS2 "${INDEX_TTS2_REF}"; \
     install_node https://github.com/chflame163/ComfyUI_LayerStyle.git custom_nodes/ComfyUI_LayerStyle "${LAYER_STYLE_REF}"; \
+    install_node https://github.com/chflame163/ComfyUI_LayerStyle_Advance.git custom_nodes/ComfyUI_LayerStyle_Advance "${LAYER_STYLE_ADVANCE_REF}"; \
     install_node https://github.com/10e9928a/ComfyUI-LLM.git custom_nodes/ComfyUI-LLM "${LLM_REF}"
 
 RUN set -eux; \
@@ -64,9 +66,10 @@ RUN set -eux; \
         custom_nodes/ComfyUI-VideoHelperSuite/requirements.txt \
         custom_nodes/ComfyUI-IndexTTS2/requirements.txt \
         custom_nodes/ComfyUI_LayerStyle/requirements.txt \
+        custom_nodes/ComfyUI_LayerStyle_Advance/requirements.txt \
         custom_nodes/ComfyUI-LLM/requirements.txt; \
     do \
-        sed '/^[[:space:]]*opencv-/d' "${requirements}" >> "${combined_requirements}"; \
+        sed -e '/^[[:space:]]*opencv-/d' -e '/^[[:space:]]*onnxruntime[[:space:]]*$/d' "${requirements}" >> "${combined_requirements}"; \
         printf '\n' >> "${combined_requirements}"; \
     done; \
     python -m pip install -r "${combined_requirements}" opencv-contrib-python-headless click==8.2.1 onnx==1.19.1 onnxruntime-gpu==1.27.0 sageattention==1.0.6; \
