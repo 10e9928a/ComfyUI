@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 FROM pytorch/pytorch:2.13.0-cuda13.0-cudnn9-runtime
 
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -22,11 +23,29 @@ ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
 
 WORKDIR /opt/ComfyUI
 
-COPY requirements.txt ./
+COPY . .
+
+ARG COMFYUI_REF=""
+RUN set -eux; \
+    if [ -n "${COMFYUI_REF}" ]; then \
+        case "${COMFYUI_REF}" in *[!0-9a-f]*) exit 1 ;; esac; \
+        test "${#COMFYUI_REF}" -eq 40; \
+        git init /tmp/comfyui-core; \
+        git -C /tmp/comfyui-core remote add origin https://github.com/Comfy-Org/ComfyUI.git; \
+        git -C /tmp/comfyui-core fetch --depth 1 origin "${COMFYUI_REF}"; \
+        test "$(git -C /tmp/comfyui-core rev-parse FETCH_HEAD)" = "${COMFYUI_REF}"; \
+        git -C /tmp/comfyui-core archive --format=tar --output=/tmp/comfyui-core.tar FETCH_HEAD; \
+        cd /tmp; \
+        rm -rf /opt/ComfyUI; \
+        mkdir -p /opt/ComfyUI; \
+        tar -xf /tmp/comfyui-core.tar -C /opt/ComfyUI; \
+        rm -rf /tmp/comfyui-core /tmp/comfyui-core.tar; \
+    fi
+
+LABEL io.norma-ai.comfyui.core-revision="${COMFYUI_REF}"
+
 RUN python -m pip install --upgrade pip setuptools wheel \
     && python -m pip install -r requirements.txt
-
-COPY . .
 
 ARG KJNODES_REF=827fe6ee0ed7348d8daa988ed852bedf1272380c
 ARG GGUF_REF=6ea2651e7df66d7585f6ffee804b20e92fb38b8a
@@ -76,6 +95,39 @@ RUN set -eux; \
     python -m pip check; \
     python -c 'import cv2, gguf, onnx, torch, onnxruntime, sageattention, soundfile; assert hasattr(cv2, "ximgproc"); assert "CUDAExecutionProvider" in onnxruntime.get_available_providers()'; \
     rm -f "${combined_requirements}"
+
+RUN <<'SHELL'
+set -eu
+if [ -n "${COMFYUI_REF}" ]; then
+    python - <<'PY'
+import runpy
+import sys
+
+sys.argv = ["main.py", "--cpu", "--disable-all-custom-nodes", "--quick-test-for-ci"]
+try:
+    runpy.run_path("main.py", run_name="__main__")
+except SystemExit as exc:
+    if exc.code not in (None, 0):
+        raise
+
+import comfyui_version
+import nodes
+
+assert comfyui_version.__version__ == "0.42.1", comfyui_version.__version__
+required = {
+    "UNETLoader", "CLIPLoader", "VAELoader", "LoadImage",
+    "ImageScaleToTotalPixels", "TextEncodeQwenImage21", "QwenImage21Cache",
+    "ReferenceMultiLatent", "TextGenerate", "CLIPTextEncode", "ConditioningZeroOut", "KSampler",
+    "VAEDecode", "SaveImage", "SaveImageAdvanced",
+}
+missing = required - nodes.NODE_CLASS_MAPPINGS.keys()
+assert not missing, f"Missing native edit nodes: {sorted(missing)}"
+clip_types = nodes.NODE_CLASS_MAPPINGS["CLIPLoader"].INPUT_TYPES()["required"]["type"][0]
+assert "flux3" in clip_types, clip_types
+print(f"CPU startup passed: ComfyUI {comfyui_version.__version__}, {len(required)} native edit nodes, flux3 encoder")
+PY
+fi
+SHELL
 
 EXPOSE 8188
 

@@ -7,17 +7,24 @@ on:
     tags:
       - "v*"
   workflow_dispatch:
+    inputs:
+      comfyui_ref:
+        description: "Official Comfy-Org/ComfyUI v0.42.1 commit SHA; publishes a candidate tag only"
+        required: true
+        default: "63be2f9b82ad0dac88a7ceaa28a9cf3154125a18"
+        type: string
 
 permissions:
   contents: read
 
 concurrency:
-  group: docker-${{ github.ref }}
+  group: docker-${{ github.ref }}-${{ inputs.comfyui_ref || 'fork' }}
   cancel-in-progress: true
 
 env:
+  TCR_BUILD_REGION: na-siliconvalley
   REGISTRY: uswccr.ccs.tencentyun.com
-  IMAGE_NAME: uswccr.ccs.tencentyun.com/registry/facefusion-docker
+  IMAGE_NAME: uswccr.ccs.tencentyun.com/norma-ai/facefusion-docker
 
 jobs:
   build:
@@ -25,6 +32,18 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
+
+      - name: Validate official core revision
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          COMFYUI_REF: ${{ inputs.comfyui_ref }}
+        run: '[[ "$COMFYUI_REF" =~ ^[0-9a-f]{40}$ ]]'
+
+      - name: Reclaim hosted runner disk space
+        if: runner.environment == 'github-hosted'
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet
+          df -h /
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -41,11 +60,16 @@ jobs:
         uses: docker/metadata-action@v6
         with:
           images: ${{ env.IMAGE_NAME }}
+          flavor: latest=false
           tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=ref,event=branch
-            type=ref,event=tag
-            type=sha,prefix=sha-
+            type=raw,value=latest,enable=${{ github.event_name != 'workflow_dispatch' && github.ref == 'refs/heads/master' }}
+            type=ref,event=branch,enable=${{ github.event_name != 'workflow_dispatch' }}
+            type=ref,event=tag,enable=${{ github.event_name != 'workflow_dispatch' }}
+            type=sha,prefix=sha-,enable=${{ github.event_name != 'workflow_dispatch' }}
+            type=raw,value=candidate-comfyui-${{ inputs.comfyui_ref }}-${{ github.run_id }}-${{ github.run_attempt }},enable=${{ github.event_name == 'workflow_dispatch' }}
+          labels: |
+            io.norma-ai.build.tcr-region=${{ env.TCR_BUILD_REGION }}
+            io.norma-ai.comfyui.core-revision=${{ inputs.comfyui_ref || github.sha }}
 
       - name: Build and push image
         uses: docker/build-push-action@v7
@@ -53,8 +77,11 @@ jobs:
           context: .
           platforms: linux/amd64
           push: true
+          build-args: |
+            COMFYUI_REF=${{ inputs.comfyui_ref || '' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          provenance: false
+          provenance: mode=max
+          sbom: true
