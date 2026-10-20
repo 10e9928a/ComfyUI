@@ -99,9 +99,17 @@ RUN set -eux; \
 RUN <<'SHELL'
 set -eu
 if [ -n "${COMFYUI_REF}" ]; then
+    # Preserve the dependency used by the retained MelBandRoFormer node snapshot.
+    python -m pip install rotary-embedding-torch==0.9.1
+    python -m pip check
     python - <<'PY'
+from importlib.metadata import version
 import runpy
 import sys
+
+from rotary_embedding_torch import RotaryEmbedding
+
+assert version("rotary-embedding-torch") == "0.9.1"
 
 sys.argv = ["main.py", "--cpu", "--disable-all-custom-nodes", "--quick-test-for-ci"]
 try:
